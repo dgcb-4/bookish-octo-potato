@@ -1,6 +1,6 @@
 # ---- CAPSTONE PROJECT ------------
 
-#=====importing libraries===========
+#===== Importing libraries===========
 import os
 from datetime import datetime, date
 
@@ -14,7 +14,6 @@ if not os.path.exists("tasks.txt"):
 with open("tasks.txt", 'r') as task_file:
     task_data = task_file.read().split("\n")
     task_data = [t for t in task_data if t != ""]
-
 
 task_list = []
 for t_str in task_data:
@@ -31,11 +30,10 @@ for t_str in task_data:
 
     task_list.append(curr_t)
 
-#====Login Section====
-'''This code reads usernames and password from the user.txt file to 
-    allow a user to login.
+#==== Opening Section====
+''' This section opens the txt file and creates one with default values if not exist
 '''
-# If no user.txt file, write one with a default account
+# If not user.txt file, write one with a default account
 if not os.path.exists("user.txt"):
     with open("user.txt", "w") as default_file:
         default_file.write("admin;password")
@@ -43,62 +41,43 @@ if not os.path.exists("user.txt"):
 # Read in user_data
 with open("user.txt", 'r') as user_file:
     user_data = user_file.read().split("\n")
-
-# Convert to a dictionary
-username_password = {}
-for user in user_data:
-    username, password = user.split(';')
-    username_password[username] = password
-
-logged_in = False
-while not logged_in:
-
-    print("LOGIN")
-    curr_user = input("Username: ")
-    curr_pass = input("Password: ")
-    if curr_user not in username_password.keys():
-        print("User does not exist")
-        continue
-    elif username_password[curr_user] != curr_pass:
-        print("Wrong password")
-        continue
-    else:
-        print("Login Successful!")
-        logged_in = True
+    
 
 # =========== Function 1. Register a new user ===========
 def reg_user():
     '''Add a new user to the user.txt file'''
     while True:
         # - Request input of a new username
-        new_username = input("New Username: ").strip()
+        new_username = input("New Username: ").strip()             # Remove whitespaces
 
-       if new_username in username_password:
+       if new_username in username_password:                       # Conditional to check if the user exists 
             print("Error! Username already exists. Please choose another.")
             continue
         new_password = input("New Password: ")
         confirm_password = input("Confirm Password: ")
         
-        if new_password == confirm_password:
+        if new_password == confirm_password:                        # Conditional to check if both passwords match 
             username_password[new_username] = new_password
             with open("user.txt", "w") as out_file:
-                user_data = [f"{k};{username_password[k]}" for k in username_password]  # Format user data
+                user_data = [f"{k};{username_password[k]}" for k in username_password]              # Format user data
                 out_file.write("\n".join(user_data))
             print("New user added")
             break
-        else:
+        else:                                                
             print("Passwords do not match")
 
 
 # =========== Function 2. Add a new task ===========       
 def add_task():
     '''Allow a user to add a new task to task.txt file'''
-    task_username = input("Name of person assigned to task: ")
-    if task_username not in username_password.keys():
+    
+    task_username = input("Name of person assigned to task: ")                # Input for user's name 
+    if task_username not in username_password.keys():                         # Conditional to check in file if user exists 
         print("User does not exist. Please enter a valid username")
-        return
+        return                                                                # Return to main options 
 
-    task_title = input("Title of Task: ")
+    # If user exists on file: 
+    task_title = input("Title of Task: ")                                     # Inputs task information
     task_description = input("Description of Task: ")
     while True:
         try:
@@ -107,9 +86,10 @@ def add_task():
             break
         except ValueError:
             print("Invalid datetime format. Please use the format specified")
-
-    curr_date = date.today()
-    new_task = {
+            
+ 
+    curr_date = date.today()                                                # Then get the current date
+    new_task = {                                                            # Adds task info in a dictionary 
         "username": task_username,
         "title": task_title,
         "description": task_description,
@@ -118,7 +98,7 @@ def add_task():
         "completed": False
     }
 
-    task_list.append(new_task)
+    task_list.append(new_task)                                      # Adds new task into the txt file "tasks" or creates a new one too 
     with open("tasks.txt", "w") as task_file:
         task_list_to_write = []
         for t in task_list:
@@ -137,7 +117,8 @@ def add_task():
 
 # =========== Function 3. View all tasks ===========
 def view_all():
-    '''Reads the tasks from task.txt file and prints to the console'''
+    ''' Reads the tasks from task.txt file and prints to the console'''
+    
     for t in task_list:
         disp_str = f"Task: \t\t {t['title']}\n"
         disp_str += f"Assigned to: \t {t['username']}\n"
@@ -145,20 +126,19 @@ def view_all():
         disp_str += f"Due Date: \t {t['due_date'].strftime(DATETIME_STRING_FORMAT)}\n"
         disp_str += f"Task Description: \n {t['description']}\n"
         print(disp_str)
-
+        print("-" * 35)                                                # Prints line to improve readability 
 
 # =========== Function 4. View tasks for current user ===========         
 def view_mine(): 
-    '''Reads the task from task.txt file and prints to the console in the 
-           format of Output 2 presented in the task pdf (i.e. includes spacing
-           and labelling)
+    ''' This function reads the task on the txt file assigned to the current user and allows them to edit 
+        and mark them as completed
         '''
-    task_indices = {}  # Dictionary to relate the shown index to actual task index
+    task_indices = {}  # Dictionary to relate the shown index to the actual task index
     index = 1          # Starting the index instead of 0
     for i, t in enumerate(task_list):                   # To generate indices of tasks
             if t['username'] == curr_user:
                 task_indices[index] = i
-                disp_str = f"Task: \t\t {t['title']}\n"
+                disp_str = f"Task no. {index}: \t {t['title']}\n"
                 disp_str += f"Assigned to: \t {t['username']}\n"
                 disp_str += f"Date Assigned: \t {t['assigned_date'].strftime(DATETIME_STRING_FORMAT)}\n"
                 disp_str += f"Due Date: \t {t['due_date'].strftime(DATETIME_STRING_FORMAT)}\n"
@@ -166,17 +146,19 @@ def view_mine():
                 disp_str += f"Task Completed: \n {t['completed']}\n"
                 index += 1 
                 print(disp_str)
+                print("-" * 35)                                                 # Line Separator 
                 
  if not any(t['username'] == curr_user for t in task_list):
         print(f"\tThere isn't any task assigned for: {curr_user}")
 
-# Ask user to select an specific task or return to main menu
+# Ask the user to select a specific task or return to the main menu
     task_chose = int(input("\nEnter the specific task number or -1 to return to the main menu \n"))
     if task_chose == -1:
-      return  # Return from the function (go back to main menu)
-# Check if chosen number is valid 
+      return  # Return from the function (go back to the main menu)
+        
+# Check if the chosen number is valid 
     elif 0 < task_chose <= len(task_list) and task_chose in task_indices:
-      selected_task_index = task_indices[task_chose - 1]     #Provide the actual index of the task selected 
+      selected_task_index = task_indices[task_chose - 1]                     # Provide the actual index of the task selected 
       selected_task = task_list[selected_task_index]
 
       if selected_task['completed']:
@@ -225,10 +207,10 @@ def generating_reports():
   completed_tasks = sum(task["completed"] for task in task_list)
   uncompleted_tasks = total_tasks - completed_tasks
 
-  overdue_tasks = 0                   # Initializing the variable
-  today = datetime.today()            # Obtaining today's date for the comparison
-  for task in task_list:              # Loop to check all the tasks' dates
-    if not task["completed"] and task["due_date"] < today:   #Conditonal to evaluate if task is overdue or not
+  overdue_tasks = 0                                           # Initializing the variable
+  today = datetime.today()                                    # Obtaining today's date for the comparison
+  for task in task_list:                                      # Loop to check all the tasks' dates
+    if not task["completed"] and task["due_date"] < today:    #  Conditonal to evaluate if task is overdue or not
       overdue_tasks += 1                
 
 
@@ -236,7 +218,7 @@ def generating_reports():
   percent_incomplete = (uncompleted_tasks / total_tasks) * 100
   percent_overdue = (overdue_tasks / total_tasks) * 100
 
-  # Create Task overview content:
+  # Creates Task overview content:
   report_content = f"""
     Task Overview Report
 
@@ -248,9 +230,9 @@ def generating_reports():
     Percentage Overdue: {percent_overdue:.2f}%
 """
 
-# User tasks dictionary from each user
-  user_tasks = {}  # Dictionary to store tasks per user
-  for task in task_list:
+# Dictionary 'User tasks' from each user
+  user_tasks = {}                                              # Dictionary to store user's tasks 
+  for task in task_list:                                       # Loop to check the user's tasks in the task_list 
     user = task["username"]
     if user not in user_tasks:
       user_tasks[user] = {"assigned": 0, "completed": 0, "uncompleted": 0, "overdue": 0}
@@ -266,11 +248,11 @@ def generating_reports():
         user_tasks[user]["uncompleted"] += 1
   
 
-# Generate User overview content
+# Generates user overview content
   user_report_content = f"\nUser Overview Report\n\n"
   user_report_content += f"Total Tasks: {total_tasks}\n\n"
 
-  for user, stats in user_tasks.items():                # Loop to obtain tasks status from each user
+  for user, stats in user_tasks.items():                    # Loop to obtain tasks status from each user
     assigned_tasks = stats["assigned"]
     completed_tasks = stats["completed"]
     uncompleted_tasks = stats["uncompleted"]
@@ -300,14 +282,41 @@ def generating_reports():
     f.write(user_report_content)
   
   print(f"\tReports generated in files: {filename} and {filename2}")         # Successfull message for user
+    
+
+# ======== MAIN CODE AND MENU =========
+''' This code reads usernames and passwords from the user.txt file  allowing the user to login.
+'''
+# Main code to log in
+
+# Converts to a dictionary
+username_password = {}
+for user in user_data:
+    username, password = user.split(';')        
+    username_password[username] = password
+
+logged_in = False
+while not logged_in:
+
+    print("LOGIN")
+    curr_user = input("Username: ")
+    curr_pass = input("Password: ")
+    if curr_user not in username_password.keys():
+        print("User does not exist")
+        continue
+    elif username_password[curr_user] != curr_pass:
+        print("Wrong password")
+        continue
+    else:
+        print("Login Successful!")
+        logged_in = True
 
 
-
-#======== Loop to show the menu to user =========
+#======== Main menu options =========
 while True:
-    # Presenting the menu to the user and making sure that the user input is converted to lower case.
+    # Presenting the menu to the user and ensuring the input is converted to lowercase.
     print()
-    menu = input('''Select one of the following Options below:
+    menu = input('''Select one of the following options below:
 r - Registering a user
 a - Adding a task
 va - View all tasks
